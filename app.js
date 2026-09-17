@@ -1,4 +1,4 @@
-import { extractEntry, parseArchive } from "./archive.js?v=native-glm-3";
+import { createZip, extractEntry, parseArchive } from "./archive.js?v=native-glm-4";
 
 const $ = (selector) => document.querySelector(selector);
 const state = { file: null, entries: [], path: "", format: "" };
@@ -16,6 +16,28 @@ async function downloadEntry(entry) {
     setTimeout(() => URL.revokeObjectURL(url), 30000);
     toast(`Extracted ${anchor.download}`);
   } catch (error) { showNotice(error.message); }
+}
+
+function downloadBlob(blob, name) {
+  const url = URL.createObjectURL(blob), anchor = document.createElement("a");
+  anchor.href = url; anchor.download = name; anchor.click();
+  setTimeout(() => URL.revokeObjectURL(url), 30000);
+}
+
+function safeZipName(name) {
+  const base = name.replace(/\.(glm|zip)$/i, "").replace(/[^a-z0-9._-]+/gi, "-") || "archive";
+  return `${base}.zip`;
+}
+
+async function downloadZip(entries, name, button) {
+  const originalLabel = button.textContent;
+  try {
+    button.disabled = true;
+    const blob = await createZip(state.file, entries, (done, total) => { button.textContent = `Packing ${done}/${total}…`; });
+    downloadBlob(blob, safeZipName(name));
+    toast(`Extracted ${entries.length.toLocaleString()} files to ${safeZipName(name)}`);
+  } catch (error) { showNotice(error.message); }
+  finally { button.disabled = false; button.textContent = originalLabel; }
 }
 
 function currentItems() {
@@ -49,7 +71,16 @@ function render() {
     wrapper.append(icon, button); nameCell.append(wrapper);
     typeCell.textContent = item.isDirectory ? "Folder" : (item.label.split(".").pop() || "File").toUpperCase();
     sizeCell.textContent = item.isDirectory ? "—" : formatSize(item.size);
-    if (!item.isDirectory) { const download = document.createElement("button"); download.className = "download"; download.textContent = "Extract"; download.onclick = () => downloadEntry(item); actionCell.append(download); }
+    const download = document.createElement("button"); download.className = "download";
+    if (item.isDirectory) {
+      download.textContent = "Extract folder";
+      download.onclick = () => {
+        const prefix = `${state.path}${item.label}/`;
+        const entries = state.entries.filter((entry) => !entry.isDirectory && entry.name.startsWith(prefix));
+        downloadZip(entries.map((entry) => ({ ...entry, zipName: entry.name.slice(prefix.length) })), item.label, download);
+      };
+    } else { download.textContent = "Extract"; download.onclick = () => downloadEntry(item); }
+    actionCell.append(download);
   }
   $("#noResults").hidden = items.length !== 0;
 }
@@ -70,6 +101,7 @@ function toast(message) { const element = $("#toast"); element.textContent = mes
 
 $("#chooseButton").onclick = () => $("#fileInput").click();
 $("#openAnother").onclick = () => $("#fileInput").click();
+$("#extractAll").onclick = (event) => downloadZip(state.entries.filter((entry) => !entry.isDirectory), state.file.name, event.currentTarget);
 $("#fileInput").onchange = (event) => event.target.files[0] && openArchive(event.target.files[0]);
 $("#searchInput").oninput = render;
 const dropZone = $("#dropZone");

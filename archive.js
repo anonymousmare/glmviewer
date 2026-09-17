@@ -96,3 +96,41 @@ export async function extractEntry(file, entry) {
   if (entry.method === 8 && typeof DecompressionStream !== "undefined") return new Response(compressed.stream().pipeThrough(new DecompressionStream("deflate-raw"))).blob();
   throw new Error(`Compression method ${entry.method} is not supported by this browser.`);
 }
+
+const zipEncoder = new TextEncoder();
+let crcTable;
+function crc32(bytes) {
+  if (!crcTable) crcTable = Array.from({ length: 256 }, (_, index) => {
+    let value = index;
+    for (let bit = 0; bit < 8; bit++) value = (value >>> 1) ^ ((value & 1) ? 0xedb88320 : 0);
+    return value >>> 0;
+  });
+  let crc = 0xffffffff;
+  for (const byte of bytes) crc = (crc >>> 8) ^ crcTable[(crc ^ byte) & 0xff];
+  return (crc ^ 0xffffffff) >>> 0;
+}
+function zipRecord(length, values) {
+  const bytes = new Uint8Array(length), view = new DataView(bytes.buffer);
+  for (const [offset, size, value] of values) view[`setUint${size}`](offset, value, true);
+  return bytes;
+}
+
+export async function createZip(file, entries, onProgress = () => {}) {
+  if (!entries.length) throw new Error("This folder contains no files to extract.");
+  if (entries.length > 0xffff) throw new Error("This selection has too many files for a browser-created ZIP.");
+  const parts = [], directoryParts = []; let offset = 0;
+  for (let index = 0; index < entries.length; index++) {
+    const entry = entries[index], blob = await extractEntry(file, entry);
+    const data = new Uint8Array(await blob.arrayBuffer()), name = zipEncoder.encode(cleanPath(entry.zipName || entry.name));
+    if (!name.length || name.length > 0xffff || data.length > 0xffffffff || offset > 0xffffffff) throw new Error("This selection is too large for a browser-created ZIP.");
+    const crc = crc32(data);
+    const local = zipRecord(30, [[0, 32, 0x04034b50], [4, 16, 20], [6, 16, 0x0800], [8, 16, 0], [14, 32, crc], [18, 32, data.length], [22, 32, data.length], [26, 16, name.length]]);
+    const central = zipRecord(46, [[0, 32, 0x02014b50], [4, 16, 20], [6, 16, 20], [8, 16, 0x0800], [10, 16, 0], [16, 32, crc], [20, 32, data.length], [24, 32, data.length], [28, 16, name.length], [42, 32, offset]]);
+    parts.push(local, name, data); directoryParts.push(central, name);
+    offset += local.length + name.length + data.length;
+    onProgress(index + 1, entries.length);
+  }
+  const directory = new Blob(directoryParts), end = zipRecord(22, [[0, 32, 0x06054b50], [8, 16, entries.length], [10, 16, entries.length], [12, 32, directory.size], [16, 32, offset]]);
+  if (offset + directory.size > 0xffffffff) throw new Error("This selection is too large for a browser-created ZIP.");
+  return new Blob([...parts, directory, end], { type: "application/zip" });
+}

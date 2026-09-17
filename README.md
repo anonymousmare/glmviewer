@@ -1,6 +1,6 @@
 # GLM Viewer
 
-A dependency-free, local-first browser for ZIP-compatible `.glm` archives. It reads the archive index without uploading the file, provides folder navigation and search, and extracts individual entries using their original stored filenames.
+A dependency-free, local-first browser for native Supreme Ruler `.glm` archives and standard ZIP containers. It reads the archive index without uploading the file, provides folder navigation and search, and extracts individual entries using their original stored filenames.
 
 ## Run locally
 
@@ -10,4 +10,4 @@ python3 -m http.server 4173
 
 Then open <http://localhost:4173>. Modern Chromium- or Firefox-based browsers are recommended for Deflate decompression support.
 
-> **Format note:** `.glm` is not one universal file format. The viewer recognizes GLM archives that use a standard ZIP container. A sample from another producer will require a parser for that producer's binary layout.
+The native parser has been verified against the split `sp2.glm` fixture in this repository: 106 directories and 7,648 files. `.glm` is not one universal format, so unrelated producer-specific variants may still require their own parser.

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#11130f" />
+    <title>GLM Viewer</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="GLM Viewer home">
+        <span class="brand-mark">G</span><span>GLM <b>Viewer</b></span>
+      </a>
+      <span class="local-pill"><i></i> Local only</span>
+      <a class="about" href="#about">About</a>
+    </header>
+
+    <main>
+      <section id="emptyView" class="hero">
+        <p class="eyebrow">Archive utility</p>
+        <h1>Open it. Browse it.<br /><em>Take back what’s inside.</em></h1>
+        <p class="lede">Inspect ZIP-compatible GLM archives and extract their contents with original folder paths and filenames intact. Nothing leaves your device.</p>
+        <div id="dropZone" class="drop-zone">
+          <div class="file-icon" aria-hidden="true"><span>GLM</span></div>
+          <div>
+            <h2>Drop your archive here</h2>
+            <p>or choose a <code>.glm</code> or <code>.zip</code> file</p>
+          </div>
+          <button id="chooseButton" class="primary">Choose archive</button>
+          <input id="fileInput" type="file" accept=".glm,.zip,application/zip" hidden />
+        </div>
+        <div class="feature-row">
+          <article><span>01</span><h3>Private by design</h3><p>Your archive is read entirely in this browser.</p></article>
+          <article><span>02</span><h3>Names preserved</h3><p>Export individual files with their stored names.</p></article>
+          <article><span>03</span><h3>Large-file friendly</h3><p>Only the archive index is loaded while browsing.</p></article>
+        </div>
+      </section>
+
+      <section id="browserView" class="browser" hidden>
+        <div class="archive-head">
+          <div><p class="eyebrow">Open archive</p><h1 id="archiveName"></h1><p id="archiveMeta"></p></div>
+          <button id="openAnother" class="secondary">Open another</button>
+        </div>
+        <div class="toolbar">
+          <nav id="breadcrumbs" class="breadcrumbs" aria-label="Current folder"></nav>
+          <label class="search"><span aria-hidden="true">⌕</span><input id="searchInput" type="search" placeholder="Search this archive" /></label>
+        </div>
+        <div id="notice" class="notice" hidden></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Name</th><th>Type</th><th>Size</th><th><span class="sr-only">Action</span></th></tr></thead>
+            <tbody id="fileList"></tbody>
+          </table>
+          <div id="noResults" class="no-results" hidden>No files match your search.</div>
+        </div>
+        <p class="privacy-note">Processed locally · files are never uploaded</p>
+      </section>
+
+      <section id="about" class="about-section"><p class="eyebrow">How it works</p><h2>A careful view into your archive.</h2><p>GLM is used by more than one application. This viewer supports GLM files that use the standard ZIP container, reads the central directory, and restores the names saved by the creating application.</p></section>
+    </main>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

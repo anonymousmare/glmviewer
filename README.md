@@ -1,6 +1,6 @@
 # GLM Viewer
 
-A dependency-free, local-first browser for native Supreme Ruler `.glm` archives and standard ZIP containers. It reads the archive index without uploading the file, provides folder navigation and search, and extracts individual entries using their original stored filenames.
+A dependency-free, local-first browser for native Supreme Ruler `.glm` archives and standard ZIP containers. It reads the archive index without uploading the file, provides folder navigation and search, and extracts individual entries using their original stored filenames. Entire folders or archives can also be downloaded as ZIP files while preserving their directory structure.
 
 ## Run locally
 

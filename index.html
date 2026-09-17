@@ -40,7 +40,10 @@
       <section id="browserView" class="browser" hidden>
         <div class="archive-head">
           <div><p class="eyebrow">Open archive</p><h1 id="archiveName"></h1><p id="archiveMeta"></p></div>
-          <button id="openAnother" class="secondary">Open another</button>
+          <div class="archive-actions">
+            <button id="extractAll" class="primary">Extract all</button>
+            <button id="openAnother" class="secondary">Open another</button>
+          </div>
         </div>
         <div class="toolbar">
           <nav id="breadcrumbs" class="breadcrumbs" aria-label="Current folder"></nav>
@@ -60,6 +63,6 @@
       <section id="about" class="about-section"><p class="eyebrow">How it works</p><h2>A careful view into your archive.</h2><p>The viewer understands Supreme Ruler's native GLM directory table as well as standard ZIP containers. It reads only the file index while browsing and restores the paths and filenames saved by the creating application.</p></section>
     </main>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
-    <script type="module" src="app.js?v=native-glm-3"></script>
+    <script type="module" src="app.js?v=native-glm-4"></script>
   </body>
 </html>
